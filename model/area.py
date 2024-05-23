@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Area(db.Model):
+    __tablename__ = 'area'
     id_area: int = db.Column(db.Integer, primary_key=True)
     nombre: str = db.Column(db.String(255), nullable=False)
 

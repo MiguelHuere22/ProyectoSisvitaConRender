@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify
 from model.test_zung import TestZung
 from utils.db import db
+from schemas.test_zung_schema import  tests_zung_schema
 
 test_zung_bp = Blueprint('test_zung_bp', __name__)
 
@@ -15,10 +16,8 @@ def getMensaje():
 def getTestZung():
     tests_zung = TestZung.query.all()
     result = {
-        "data": [test.__dict__ for test in tests_zung],
+        "data": tests_zung_schema.dump(tests_zung),
         "status_code": 200,
         "msg": "Se recuperó la lista de Tests Zung sin inconvenientes"
     }
-    for test in result["data"]:
-        test.pop('_sa_instance_state', None)  # Eliminar metadata de SQLAlchemy
     return jsonify(result), 200

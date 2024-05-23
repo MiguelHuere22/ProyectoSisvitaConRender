@@ -10,6 +10,8 @@ class Estudiante(db.Model):
     correo: str = db.Column(db.String(255), unique=True, nullable=True)
     telefono: str = db.Column(db.String(9), unique=True, nullable=True)
 
+    respuestas = db.relationship('Respuesta', back_populates='estudiante')
+
     def __init__(self, nombre, apellido, sexo, correo, telefono):
         self.Nombre = nombre
         self.Apellido = apellido

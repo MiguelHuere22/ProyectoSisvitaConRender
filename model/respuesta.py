@@ -12,3 +12,4 @@ class Respuesta(db.Model):
         self.respuesta_usuario = respuesta_usuario
         self.pregunta_id = pregunta_id
         self.id_estudiante = id_estudiante
+

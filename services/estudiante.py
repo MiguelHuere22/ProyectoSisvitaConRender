@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from model.estudiante import Estudiante
 from utils.db import db
+from schemas.estudiante_schema import estudiantes_schema
 
 estudiantes = Blueprint('estudiantes', __name__)
 
@@ -15,12 +16,10 @@ def getMensaje():
 def getEstudiantes():
     estudiantes = Estudiante.query.all()
     result = {
-        "data": [estudiante.__dict__ for estudiante in estudiantes],
+        "data": estudiantes_schema.dump(estudiantes),
         "status_code": 200,
         "msg": "Se recuperaron los estudiantes sin inconvenientes"
     }
-    for estudiante in result["data"]:
-        estudiante.pop('_sa_instance_state', None)  # Eliminar metadata de SQLAlchemy
     return jsonify(result), 200
 
 # -------------------------------------------------------------
@@ -37,11 +36,7 @@ def agregarEstudiante():
     )
     db.session.add(nuevo_estudiante)
     db.session.commit()
-    return jsonify({
-        "status_code": 201,
-        "msg": "Estudiante agregado exitosamente",
-        "data": nuevo_estudiante.__dict__
-    }), 201
+    return estudiante_schema.jsonify(nuevo_estudiante), 201
 
 # -------------------------------------------------------------
 
@@ -55,11 +50,7 @@ def actualizarEstudiante(id):
     estudiante.correo = data.get('correo', estudiante.correo)
     estudiante.telefono = data.get('telefono', estudiante.telefono)
     db.session.commit()
-    return jsonify({
-        "status_code": 200,
-        "msg": "Estudiante actualizado exitosamente",
-        "data": estudiante.__dict__
-    }), 200
+    return estudiante_schema.jsonify(estudiante), 200
 
 # -------------------------------------------------------------
 

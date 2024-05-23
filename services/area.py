@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from model.area import Area
 from utils.db import db
+from schemas.area_schema import area_schema, areas_schema
 
 areas = Blueprint('areas', __name__)
 
@@ -9,21 +10,15 @@ def getMensaje():
     result = {"data": 'Hola, Areas'}
     return jsonify(result)
 
-# -------------------------------------------------------------
-
 @areas.route('/areas/v1/listar', methods=['GET'])
 def getAreas():
     areas = Area.query.all()
     result = {
-        "data": [area.__dict__ for area in areas],
+        "data": areas_schema.dump(areas),
         "status_code": 200,
         "msg": "Se recuperó la lista de Áreas sin inconvenientes"
     }
-    for area in result["data"]:
-        area.pop('_sa_instance_state', None)  # Eliminar metadata de SQLAlchemy
     return jsonify(result), 200
-
-# -------------------------------------------------------------
 
 @areas.route('/areas/v1/agregar', methods=['POST'])
 def agregarArea():
@@ -31,13 +26,7 @@ def agregarArea():
     nueva_area = Area(nombre=data['nombre'])
     db.session.add(nueva_area)
     db.session.commit()
-    return jsonify({
-        "status_code": 201,
-        "msg": "Área agregada exitosamente",
-        "data": nueva_area.__dict__
-    }), 201
-
-# -------------------------------------------------------------
+    return area_schema.jsonify(nueva_area), 201
 
 @areas.route('/areas/v1/actualizar/<int:id>', methods=['PUT'])
 def actualizarArea(id):
@@ -45,13 +34,7 @@ def actualizarArea(id):
     area = Area.query.get_or_404(id)
     area.nombre = data.get('nombre', area.nombre)
     db.session.commit()
-    return jsonify({
-        "status_code": 200,
-        "msg": "Área actualizada exitosamente",
-        "data": area.__dict__
-    }), 200
-
-# -------------------------------------------------------------
+    return area_schema.jsonify(area), 200
 
 @areas.route('/areas/v1/eliminar/<int:id>', methods=['DELETE'])
 def eliminarArea(id):
@@ -62,5 +45,3 @@ def eliminarArea(id):
         "status_code": 200,
         "msg": "Área eliminada exitosamente"
     }), 200
-
-# -------------------------------------------------------------

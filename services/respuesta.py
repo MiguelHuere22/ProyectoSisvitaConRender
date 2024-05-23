@@ -1,34 +1,39 @@
 from flask import Blueprint, request, jsonify
 from model.respuesta import Respuesta
+from model.estudiante import Estudiante
+from model.pregunta import Pregunta
 from utils.db import db
+from schemas.respuesta_schema import respuestas_schema
 
-respuestas=Blueprint('respuestas',__name__)
+respuestas = Blueprint('respuestas', __name__)
 
-@respuestas.route('/respuestas/v1',methods=['GET'])
+@respuestas.route('/respuestas/v1', methods=['GET'])
 def getMensaje():
-    result={}
-    result["data"]='Hola , Respuestas'
+    result = {}
+    result["data"] = 'Hola, Respuestas'
     return jsonify(result)
-#-------------------------------------------------------------
 
-@respuestas.route('/respuestas/v1/listar',methods=['GET'])
+# -------------------------------------------------------------
+
+@respuestas.route('/respuestas/v1/listar', methods=['GET'])
 def getRespuestas():
-    result={}
-    respuestas=Respuesta.query.all()    
-    result["data"]=respuestas
-    result["status_code"]=200
-    result["msg"]="Se recupero la lista de Respuestas sin inconvenientes"
-    return jsonify(result),200
-#---------------------------------------------------------------
+    respuestas = Respuesta.query.all()
+    result = {
+        "data": respuestas_schema.dump(respuestas),
+        "status_code": 200,
+        "msg": "Se recuperó la lista de Respuestas sin inconvenientes"
+    }
+    return jsonify(result), 200
 
+# -------------------------------------------------------------
 
 # Método insert para Respuesta
 @respuestas.route('/respuestas/v1/insert', methods=['POST'])
 def insert():
     result = {}
-    respuestas_data = request.get_json()  # Esto debería ser una lista de diccionarios
+    respuestas_data = request.get_json()
 
-    if not isinstance(respuestas_data, list):  # Verifica si el payload es una lista
+    if not isinstance(respuestas_data, list):
         return jsonify({"status_code": 400, "msg": "Formato de datos incorrecto, se espera una lista"}), 400
 
     nuevas_respuestas = []
@@ -40,25 +45,25 @@ def insert():
         if not respuesta_usuario or not pregunta_id or not id_estudiante:
             return jsonify({"status_code": 400, "msg": "Faltan datos requeridos en algunos items"}), 400
 
-        # Crear el objeto Respuesta
         respuesta = Respuesta(respuesta_usuario, pregunta_id, id_estudiante)
         db.session.add(respuesta)
         nuevas_respuestas.append(respuesta)
 
-    db.session.commit()  # Realiza el commit de todas las respuestas juntas
+    db.session.commit()
 
-    result["data"] = [respuesta for respuesta in nuevas_respuestas]  # Asegúrate de que Respuesta tiene un método to_dict()
+    result["data"] = respuestas_schema.dump(nuevas_respuestas)
     result["status_code"] = 201
     result["msg"] = "Respuestas agregadas con éxito"
     return jsonify(result), 201
 
+# -------------------------------------------------------------
 
 @respuestas.route('/respuestas/v1/update', methods=['POST'])
 def update():
     result = {}
     respuestas_data = request.get_json()
 
-    if not isinstance(respuestas_data, list):  # Verifica si el payload es una lista
+    if not isinstance(respuestas_data, list):
         return jsonify({"status_code": 400, "msg": "Formato de datos incorrecto, se espera una lista"}), 400
 
     actualizadas_respuestas = []
@@ -73,16 +78,16 @@ def update():
 
         respuesta = Respuesta.query.get(id_respuesta)
         if not respuesta:
-            continue  # Si la respuesta no existe, salta a la siguiente
+            continue
 
         respuesta.respuesta_usuario = respuesta_usuario
         respuesta.pregunta_id = pregunta_id
         respuesta.id_estudiante = id_estudiante
         actualizadas_respuestas.append(respuesta)
 
-    db.session.commit()  # Realiza el commit de todas las actualizaciones juntas
+    db.session.commit()
 
-    result["data"] = [respuesta for respuesta in actualizadas_respuestas]  # Devuelve los IDs de las respuestas actualizadas
+    result["data"] = respuestas_schema.dump(actualizadas_respuestas)
     result["status_code"] = 202
     result["msg"] = "Respuestas actualizadas con éxito"
     return jsonify(result), 202

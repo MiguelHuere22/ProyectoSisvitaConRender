@@ -8,7 +8,12 @@ class Pregunta(db.Model):
     id_area: int = db.Column(db.Integer, db.ForeignKey('area.id_area'), nullable=False)
     id_test: int = db.Column(db.Integer, db.ForeignKey('test.id_test'), nullable=False)
 
+    area = db.relationship('Area', back_populates='preguntas')
+    test = db.relationship('Test', back_populates='preguntas')
+
     def __init__(self, texto, id_area, id_test):
         self.texto = texto
         self.id_area = id_area
         self.id_test = id_test
+
+
